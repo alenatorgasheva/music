@@ -3,141 +3,122 @@
 
 # Developed by A.Torgasheva
 
-# Существует множество веб-сайтов, на которых вы можете послушать музыку.
-# Как правило, там представлены альбомы, содержащие треки. Каждый трек
-# имеет название, продолжительность, имя исполнителя, год выпуска альбома
-# и другие данные. Разработайте классы для альбомов и треков. Подумайте и
-# реализуйте методы, которые могут воспроизводить трек, "ставить трек на
-# паузу", останавливать воспроизведение треков и выполнять другие действия.
+from load import Load
+from player import Player
+from song import Song
+from album import Album
 
-import time
+MENU = 'Выбрите действие:\n' \
+       '\t1 - загрузить альбом\n' \
+       '\t2 - изменить название альбома\n' \
+       '\t3 - действия с плейлистом\n' \
+       '\t4 - действия с плеером\n' \
+       '\t5 - завершить работу'
 
+PLAYLIST = '\t1 - просмотреть плейлист\n' \
+           '\t2 - добавить песню\n' \
+           '\t3 - добавить альбом\n' \
+           '\t4 - удалить песню\n' \
+           '\t5 - очистить плейлист'
 
-class Load:
-    """ """
+PLAYER = '\tPLAY (1)\n' \
+         '\tPAUSE (2)\n' \
+         '\tSTOP (3)\n' \
+         '\tсейчас играет (4)\n' \
+         '\tвыйти в главное меню (5)'
 
-    @classmethod
-    def load_album(cls, fl_album):
-        """ """
-        with open(fl_album, 'r') as file_in:
-            data = file_in.readlines()
-        new_album = Album()
-        for song in data:
-            singer, name, duration = song.split(' - ')
-            new_album.add_song(Song(singer, name, duration))
+playlist_1 = Player()
+while True:
+    print(MENU)
+    choice = input()
+    print('-' * 100)
 
+    if choice == '1':
+        print('Название файла:', end=' ')
+        file_name = input()
+        print('Название альбома:', end=' ')
+        name = input()
+        Load.load_album(file_name, name)
+        print('Альбом загружен.')
 
-class Song:
-    """ """
+    elif choice == '2':
+        print('Старое название:', end=' ')
+        old_name = input()
+        album = Album.find_album(old_name)
+        if album:
+            print('Новое название:', end=' ')
+            new_name = input()
+            album.name = new_name
+            print('Название альбома изменено.')
+        else:
+            print('Альбом не найден')
 
-    def __init__(self, singer, name, duration):
-        """ """
-        self.__name = name
-        self.__singer = singer
-        self.__duration = Song.seconds(duration)
+    elif choice == '3':
+        print(PLAYLIST)
+        choice = input()
+        print('-' * 100)
 
-    @staticmethod
-    def seconds(t):
-        min, sec = map(int, t.split(':'))
-        sec += min * 60
-        return sec
+        if choice == '1':
+            print(playlist_1)
 
+        elif choice == '2':
+            print('Ипсолнитель:', end=' ')
+            singer = input()
+            print('Название песни:', end=' ')
+            name = input()
+            song = Song.find_song(singer, name)
+            if song:
+                playlist_1.add_song(song)
+                print('Песня добавлена.')
+            else:
+                print('Песня не найдена.')
 
-class Album:
-    """ """
-    all_albums = []
-    name = property()
-    album = property()
+        elif choice == '3':
+            print('Доступные альбомы:', Album.lst_albums)
+            print('Название альбома:', end=' ')
+            name = input()
+            album = Album.find_album(name)
+            if album:
+                playlist_1.add_album(album)
+                print('Альбом добавлен.')
+            else:
+                print('Альбом не найден')
 
-    def __init__(self, name='Unknown'):
-        """ """
-        self.__album = []
-        self.__name = name
-        Album.all_albums.append(self)
-
-    @name.setter
-    def name(self, new_name):
-        self.__name = new_name
-
-    @album.getter
-    def album(self):
-        return self.__album
-
-    def add_song(self, song):
-        """ """
-        self.__album.append(song)
-
-    def del_song(self, song_name):
-        for song in self.__album:
-            if song.name == song_name:
-                self.__album.remove(song)
+        elif choice == '4':
+            print('Ипсолнитель:', end=' ')
+            singer = input()
+            print('Название песни:', end=' ')
+            name = input()
+            song = Song.find_song(singer, name)
+            if song:
+                playlist_1.del_song(song)
                 print('Песня удалена.')
-                return
-        print('Песня не найдена.')
-        return
+            else:
+                print('Песня не найдена.')
 
+        elif choice == '5':
+            playlist_1.clear()
+            print(playlist_1)
 
-class Player:
-    """ """
-    def __init__(self):
-        """ """
-        self.playlist = []
-        self.play_start = 0
-        self.pause_start = 0
-        self._play = False
-        self._pause = False
+    elif choice == '4':
+        while True:
+            print(PLAYER)
+            choice = input()
+            if choice == '1':
+                playlist_1.play()
+            elif choice == '2':
+                playlist_1.pause()
+            elif choice == '3':
+                playlist_1.stop()
+            elif choice == '4':
+                print(playlist_1.now_playing())
+            elif choice == '5':
+                break
+            print('-' * 100)
 
-    def add_song(self, song):
-        """ """
-        self.playlist.append(song)
+    elif choice == '5':
+        break
 
-    def add_album(self, album):
-        """ """
-        for song in album:
-            self.playlist.append(song)
+    print('-' * 100)
 
-    def clear(self):
-        self.playlist = []
-        self.play_start = 0
-        self.pause_start = 0
-        self._play = False
-        self._pause = False
-
-    def play(self, album):
-        """ """
-        print('PLAY')
-        t = time.time()
-        if self._pause:
-            self._pause = False
-            self.play_start += (t - self.pause_start)
-        self.play_start = t
-        self._play = True
-
-    def now_playing(self):
-        """ """
-        if self.play:
-            t = time.time()
-            duration = 0
-            for i in range(len(self.playlist)):
-                song = self.playlist[i]
-                duration += song.__duration
-                if t - (self.play_start + self.pause) < duration:
-                    return song
-        self._play = False
-        self._pause = False
-        return None
-
-    def pause(self):
-        """ """
-        print('PAUSE')
-        self.pause_start = time.time()
-        self._pause = True
-
-    def stop(self):
-        """ """
-        print('STOP')
-        self.play_start = 0
-        self.pause_start = 0
-        self._play = False
-        self._pause = False
-
+print('Работа завершена.')

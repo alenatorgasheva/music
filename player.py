@@ -14,9 +14,12 @@ class Player:
 
     def __str__(self):
         """Строковое представление"""
-        s = 'Плейлист:\n'
-        for song in self.playlist:
-            s += '{}\n'.format(song)
+        if self.playlist:
+            s = 'Плейлист:\n'
+            for song in self.playlist:
+                s += '{}\n'.format(song)
+        else:
+            s = 'Плейлист пуст.'
         return s
 
     def add_song(self, song):
@@ -27,6 +30,10 @@ class Player:
         """Добавление альбома в плеер"""
         for song in alb.album:
             self.playlist.append(song)
+
+    def del_song(self, song):
+        """Удаление песни из плеера"""
+        self.playlist.remove(song)
 
     def clear(self):
         """Удаление всех песен из плеера"""
@@ -42,7 +49,8 @@ class Player:
         for song in self.playlist:
             t -= song.duration
             if t <= 0:
-                return song
+                return 'Сейчас играет:\n\t{}'.format(song)
+        return 'Сейчас ничего не играет.'
 
     def play(self):
         """Метод 'PLAY'"""
